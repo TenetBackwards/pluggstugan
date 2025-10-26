@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pluggstugan Chat</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg-color: #f0f8ff;
+    --sidebar-bg: rgba(255,255,255,0.7);
+    --topbar-bg: rgba(255,255,255,0.7);
+    --text-color: #111;
+    --accent-color: #008080;
+    --hover-color: rgba(0,128,128,0.1);
+}
+[data-theme="dark"] {
+    --bg-color: #0f2027;
+    --sidebar-bg: rgba(20,40,50,0.8);
+    --topbar-bg: rgba(20,40,50,0.8);
+    --text-color: #eee;
+    --accent-color: #20c2c2;
+    --hover-color: rgba(32,194,194,0.2);
+}
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+/* Navbar */
+.navbar {
+    width: 100%;
+    background: var(--topbar-bg);
+    backdrop-filter: blur(10px);
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.navbar .logo {
+    font-weight: 600;
+    font-size: 1.3rem;
+}
+.navbar ul {
+    list-style: none;
+    display: flex;
+    padding: 0;
+    margin: 0;
+    gap: 15px;
+}
+.navbar ul li a {
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+.navbar ul li a:hover, .navbar ul li a.active {
+    background: var(--hover-color);
+}
+.navbar .user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.navbar .user-info img {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+}
+.navbar .user-info button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: var(--accent-color);
+    color: #fff;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+.navbar .user-info button:hover {
+    background: var(--hover-color);
+    color: var(--text-color);
+}
+/* Main Layout */
+.main-layout {
+    display: flex;
+    min-height: calc(100vh - 60px);
+    gap: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+/* Sidebar - Chatrooms */
+.sidebar {
+    width: 250px;
+    background: var(--sidebar-bg);
+    backdrop-filter: blur(10px);
+    padding: 15px;
+    box-sizing: border-box;
+    border-radius: 12px;
+}
+.sidebar h2 { margin-top: 0; }
+.sidebar ul { list-style: none; padding: 0; margin: 10px 0; }
+.sidebar ul li { padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+.sidebar ul li:hover, .sidebar ul li.active-room { background: var(--hover-color); }
+/* Input rows */
+.input-row { display: flex; gap: 8px; margin-top: 10px; }
+.input-row input { flex: 1; padding: 8px 10px; border-radius: 8px; border: 1px solid #ccc; }
+.input-row button { padding: 8px 12px; border: none; border-radius: 8px; background: var(--accent-color); color: #fff; cursor: pointer; font-weight: 500; transition: background 0.2s; }
+.input-row button:hover { background: var(--hover-color); color: var(--text-color); }
+/* Chat Column */
+.chat-column { flex: 1; display: flex; flex-direction: column; background: var(--sidebar-bg); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; }
+.chat-column h2 { margin-top: 0; }
+.chat-box { flex: 1; overflow-y: auto; margin-bottom: 10px; padding-right: 5px; }
+.chat-box .message { background: rgba(255,255,255,0.3); padding: 10px 14px; border-radius: 12px; margin-bottom: 10px; max-width: 70%; word-wrap: break-word; }
+[data-theme="dark"] .chat-box .message { background: rgba(255,255,255,0.1); }
+/* Notepad Column */
+.notepad { width: 250px; background: var(--sidebar-bg); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; }
+.notepad textarea { width: 100%; height: 200px; resize: none; padding: 10px; border-radius: 12px; border: 1px solid #ccc; font-family: monospace; }
+.notepad button { margin-top: 8px; padding: 8px 12px; border: none; border-radius: 8px; background: var(--accent-color); color: #fff; cursor: pointer; font-weight: 500; transition: background 0.2s; }
+.notepad button:hover { background: var(--hover-color); color: var(--text-color); }
+/* Centered containers - Messages / Friendlist / Profile / Settings hidden by default */
+.centered-container, #profileContainer, #settingsContainer { display: none; padding: 20px; }
+/* Responsive */
+@media (max-width: 900px) {
+    .main-layout { flex-direction: column; }
+    .sidebar, .notepad { width: 100%; }
+}
+</style>
+</head>
+<body data-theme="light">
+
+<nav class="navbar">
+    <div class="logo">Pluggstugan</div>
+    <ul class="nav-links">
+        <li><a href="#" data-section="chatroomsLayout" class="active">Chatrooms</a></li>
+        <li><a href="#" data-section="messagesContainer">Messages</a></li>
+        <li><a href="#" data-section="friendlistContainer">Friendlist</a></li>
+        <li><a href="#" data-section="settingsContainer">Settings</a></li>
+    </ul>
+    <div class="user-info">
+        <img src="default-avatar.png" alt="User Avatar">
+        <span id="usernameDisplay" style="cursor:pointer;">User</span>
+        <button id="lang-toggle">EN/SE</button>
+        <button id="theme-toggle">🌙 / ☀️</button>
+        <button id="logoutBtn">Logout</button>
+    </div>
+</nav>
+
+<main class="main-layout" id="chatroomsLayout">
+    <!-- Chatrooms Sidebar -->
+    <section class="sidebar" id="chatroomsContainer">
+        <h2>Chatrooms</h2>
+        <ul id="roomList"></ul>
+        <div class="input-row">
+            <input type="text" id="newRoomInput" placeholder="New room...">
+            <button id="createRoomBtn">Create</button>
+        </div>
+    </section>
+
+    <!-- Chat Column -->
+    <section class="chat-column" id="chatContainer">
+        <h2 id="currentRoomTitle">Chatroom: general</h2>
+        <div id="chatBox" class="chat-box"></div>
+        <div class="input-row" id="chatInputArea">
+            <input type="text" id="messageInput" placeholder="Type a message...">
+            <button id="sendBtn">Send</button>
+        </div>
+    </section>
+
+    <!-- Notepad Column -->
+    <section class="notepad" id="notepadContainer">
+        <h2>Study Notes</h2>
+        <textarea id="notepad" placeholder="Write your notes here..."></textarea>
+        <button id="saveNoteBtn">Save Note</button>
+        <p class="autosave-status" id="autosaveStatus">Saved ✓</p>
+    </section>
+</main>
+
+<!-- Hidden Sections -->
+<section class="centered-container" id="messagesContainer">
+    <h2>Messages</h2>
+    <p>Direct messages will appear here.</p>
+</section>
+
+<section class="centered-container" id="friendlistContainer">
+    <h2>Friendlist</h2>
+    <ul id="friendsList"></ul>
+    <div class="input-row">
+        <input type="text" id="newFriendInput" placeholder="Friend's username">
+        <button id="addFriendBtn">Add Friend</button>
+    </div>
+</section>
+
+<section id="profileContainer">
+    <h2>Your Profile</h2>
+    <div>
+        <label>Name: </label>
+        <span id="profileName"></span>
+        <input type="text" id="editName" style="display:none;">
+    </div>
+    <div>
+        <label>Age: </label>
+        <span id="profileAge"></span>
+        <input type="number" id="editAge" style="display:none;">
+    </div>
+    <div>
+        <label>Gender: </label>
+        <span id="profileGender"></span>
+        <select id="editGender" style="display:none;">
+            <option value="">Select</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+        </select>
+    </div>
+    <div>
+        <label>University: </label>
+        <span id="profileUniversity"></span>
+        <input type="text" id="editUniversity" style="display:none;">
+    </div>
+    <div>
+        <label>Anonymous Mode: </label>
+        <input type="checkbox" id="profileAnonymous">
+    </div>
+    <button id="editProfileBtn">Edit Profile</button>
+    <button id="saveProfileBtn" style="display:none;">Save</button>
+    <button id="cancelProfileBtn" style="display:none;">Cancel</button>
+</section>
+
+<section class="centered-container" id="settingsContainer">
+    <h2>Settings</h2>
+    <div>
+        <label>Theme:</label>
+        <select id="themeSelect">
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+        </select>
+    </div>
+    <div>
+        <label>Language:</label>
+        <select id="langSelect">
+            <option value="en">English</option>
+            <option value="sv">Swedish</option>
+        </select>
+    </div>
+    <div>
+        <label>Notifications:</label>
+        <input type="checkbox" id="notifToggle">
+    </div>
+    <button id="saveSettingsBtn">Save Settings</button>
+</section>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        alert('Logging out...');
+    });
+
+    // Theme Toggle
+    const themeToggle = document.getElementById('theme-toggle');
+    themeToggle.addEventListener('click', () => {
+        const current = document.body.getAttribute('data-theme');
+        document.body.setAttribute('data-theme', current === 'light' ? 'dark' : 'light');
+    });
+
+    // Language Toggle
+    const langToggle = document.getElementById('lang-toggle');
+    let currentLang = 'EN';
+    langToggle.addEventListener('click', () => {
+        currentLang = currentLang === 'EN' ? 'SE' : 'EN';
+        alert('Language switched to ' + currentLang);
+    });
+
+    // Navigation
+    const navLinks = document.querySelectorAll('.nav-links a');
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            navLinks.forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+            const sectionId = link.dataset.section;
+            document.querySelectorAll('main, .centered-container, #settingsContainer').forEach(s => s.style.display='none');
+            const target = document.getElementById(sectionId);
+            if(target) target.style.display = sectionId === 'chatroomsLayout' ? 'flex' : 'block';
+        });
+    });
+
+    // Chatrooms Example
+    const roomList = document.getElementById('roomList');
+    const rooms = ['general','math','science'];
+    rooms.forEach(r => {
+        const li = document.createElement('li');
+        li.textContent = r;
+        li.addEventListener('click', () => {
+            document.getElementById('currentRoomTitle').textContent = 'Chatroom: ' + r;
+        });
+        roomList.appendChild(li);
+    });
+
+    // Create Room
+    document.getElementById('createRoomBtn').addEventListener('click', () => {
+        const val = document.getElementById('newRoomInput').value.trim();
+        if(val) {
+            const li = document.createElement('li');
+            li.textContent = val;
+            li.addEventListener('click', () => {
+                document.getElementById('currentRoomTitle').textContent = 'Chatroom: ' + val;
+            });
+            roomList.appendChild(li);
+            document.getElementById('newRoomInput').value = '';
+        }
+    });
+
+    // Send Chat Message
+    document.getElementById('sendBtn').addEventListener('click', () => {
+        const msg = document.getElementById('messageInput').value.trim();
+        if(msg) {
+            const div = document.createElement('div');
+            div.classList.add('message');
+            div.textContent = msg;
+            document.getElementById('chatBox').appendChild(div);
+            document.getElementById('messageInput').value = '';
+            document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
+        }
+    });
+
+    // Save Notes
+    document.getElementById('saveNoteBtn').addEventListener('click', () => {
+        alert('Notes saved!');
+    });
+});
+</script>
+<script src="chat.js"></script>
+</body>
+</html>

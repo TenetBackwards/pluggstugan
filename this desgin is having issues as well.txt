@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pluggstugan Chat</title>
+  <!-- Google Fonts for a clean modern look -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Light Theme (default) */
+      --bg-color: #f0f8ff;       /* soft blue */
+      --sidebar-bg: rgba(255, 255, 255, 0.7);
+      --topbar-bg: rgba(255, 255, 255, 0.7);
+      --text-color: #111;
+      --accent-color: #008080;   /* teal */
+      --hover-color: rgba(0,128,128,0.1);
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #0f2027;       /* dark teal/blue */
+      --sidebar-bg: rgba(20, 40, 50, 0.8);
+      --topbar-bg: rgba(20, 40, 50, 0.8);
+      --text-color: #eee;
+      --accent-color: #20c2c2;
+      --hover-color: rgba(32,194,194,0.2);
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+    }
+
+    /* Top Bar - scrolls away */
+    header {
+      width: 100%;
+      background: var(--topbar-bg);
+      backdrop-filter: blur(10px);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-sizing: border-box;
+    }
+
+    header h1 {
+      margin: 0;
+      font-weight: 600;
+      font-size: 1.2rem;
+      cursor: default;
+    }
+
+    /* Language & Theme Toggle Buttons */
+    .controls button {
+      margin-left: 10px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: var(--accent-color);
+      color: #fff;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .controls button:hover {
+      background: var(--hover-color);
+      color: var(--text-color);
+    }
+
+    /* Layout: Sidebar + Chat Area */
+    .container {
+      display: flex;
+      min-height: calc(100vh - 50px); /* adjust for topbar height */
+    }
+
+    /* Sidebar */
+    aside {
+      width: 250px;
+      background: var(--sidebar-bg);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    aside h2 {
+      margin-top: 0;
+      font-weight: 600;
+    }
+
+    .stugor-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .stugor-list li {
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .stugor-list li:hover {
+      background: var(--hover-color);
+    }
+
+    /* Main Chat Area */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      padding-right: 10px;
+    }
+
+    .message {
+      margin-bottom: 12px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.3);
+      max-width: 70%;
+      word-wrap: break-word;
+    }
+
+    [data-theme="dark"] .message {
+      background: rgba(255,255,255,0.1);
+    }
+
+    /* Input Area */
+    .input-area {
+      display: flex;
+    }
+
+    .input-area input {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      margin-right: 10px;
+      font-size: 1rem;
+    }
+
+    .input-area button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 12px;
+      background: var(--accent-color);
+      color: #fff;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .input-area button:hover {
+      background: var(--hover-color);
+      color: var(--text-color);
+    }
+  </style>
+</head>
+<body data-theme="light">
+  <!-- Top Bar -->
+  <header>
+    <h1>PLUGGSTUGAN</h1>
+    <div class="controls">
+      <!-- Language Toggle -->
+      <button id="lang-toggle">EN/SE</button>
+      <!-- Theme Toggle -->
+      <button id="theme-toggle">🌙 / ☀️</button>
+    </div>
+  </header>
+
+  <!-- Main Layout -->
+  <div class="container">
+    <!-- Sidebar -->
+    <aside>
+      <h2>Stugor</h2>
+      <ul class="stugor-list" id="stugor-list">
+        <!-- Default chatrooms -->
+        <li data-id="matematik">Matematik</li>
+        <li data-id="svenska">Svenska</li>
+        <li data-id="engelska">Engelska</li>
+      </ul>
+    </aside>
+
+    <!-- Chat Area -->
+    <main>
+      <div class="messages" id="messages">
+        <!-- Chat messages appended here -->
+      </div>
+      <div class="input-area">
+        <input type="text" id="chat-input" placeholder="Skriv ett meddelande...">
+        <button id="send-btn">Skicka</button>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ----------------------
+    // Language Toggle Logic
+    // ----------------------
+    let currentLang = 'se'; // default
+    const langToggle = document.getElementById('lang-toggle');
+    const chatInput = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    langToggle.addEventListener('click', () => {
+      if(currentLang === 'se') {
+        currentLang = 'en';
+        chatInput.placeholder = "Type a message...";
+        sendBtn.textContent = "Send";
+      } else {
+        currentLang = 'se';
+        chatInput.placeholder = "Skriv ett meddelande...";
+        sendBtn.textContent = "Skicka";
+      }
+    });
+
+    // ----------------------
+    // Theme Toggle Logic
+    // ----------------------
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+
+    themeToggle.addEventListener('click', () => {
+      if(body.dataset.theme === 'light') {
+        body.dataset.theme = 'dark';
+      } else {
+        body.dataset.theme = 'light';
+      }
+    });
+
+    // ----------------------
+    // Chatroom / Stugor Logic
+    // ----------------------
+    const stugorList = document.getElementById('stugor-list');
+    let currentRoom = 'matematik';
+
+    stugorList.addEventListener('click', (e) => {
+      if(e.target.tagName === 'LI') {
+        currentRoom = e.target.dataset.id;
+        // Clear chat messages when switching rooms
+        document.getElementById('messages').innerHTML = '';
+      }
+    });
+
+    // ----------------------
+    // Sending Messages
+    // ----------------------
+    const messagesEl = document.getElementById('messages');
+
+    function appendMessage(text) {
+      const msgEl = document.createElement('div');
+      msgEl.className = 'message';
+      msgEl.textContent = text;
+      messagesEl.appendChild(msgEl);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    sendBtn.addEventListener('click', () => {
+      const text = chatInput.value.trim();
+      if(text) {
+        appendMessage(text);
+        chatInput.value = '';
+        // Here you can also emit to your socket: socket.emit('message', {room: currentRoom, text});
+      }
+    });
+
+    chatInput.addEventListener('keypress', (e) => {
+      if(e.key === 'Enter') sendBtn.click();
+    });
+  </script>
+</body>
+</html>

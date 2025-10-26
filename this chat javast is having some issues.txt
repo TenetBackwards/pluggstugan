@@ -1,0 +1,425 @@
+const socket = io();
+
+// --- Auth check ---
+const user = localStorage.getItem("user");
+if (!user) window.location.href = "index.html";
+
+// --- Elements ---
+const chatBox = document.getElementById("chatBox");
+const input = document.getElementById("messageInput");
+const sendBtn = document.getElementById("sendBtn");
+const usernameDisplay = document.getElementById("usernameDisplay");
+usernameDisplay.textContent = user;
+
+const chatContainer = document.getElementById("chatContainer");
+const friendlistContainer = document.getElementById("friendlistContainer");
+const chatroomsContainer = document.getElementById("chatroomsContainer");
+const notepadContainer = document.getElementById("notepadContainer");
+const profileContainer = document.getElementById("profileContainer");
+const settingsContainer = document.getElementById("settingsContainer");
+
+const profileName = document.getElementById("profileName");
+const profileAge = document.getElementById("profileAge");
+const profileGender = document.getElementById("profileGender");
+const profileUniversity = document.getElementById("profileUniversity");
+const profileAnonymous = document.getElementById("profileAnonymous");
+
+const editName = document.getElementById("editName");
+const editAge = document.getElementById("editAge");
+const editGender = document.getElementById("editGender");
+const editUniversity = document.getElementById("editUniversity");
+
+const editBtn = document.getElementById("editProfileBtn");
+const saveBtn = document.getElementById("saveProfileBtn");
+const cancelBtn = document.getElementById("cancelProfileBtn");
+
+const translations = {
+  sv: { chatrooms: "Stugor", messages: "Meddelanden", friends: "Vänner", profile: "Min profil", create_room: "Skapa en ny stuga" },
+  en: { chatrooms: "Chatrooms", messages: "Messages", friends: "Friends", profile: "My profile", create_room: "Create new room" }
+};
+
+let currentRoom = localStorage.getItem("currentRoom") || "general";
+document.getElementById("currentRoomTitle").textContent = `Chatroom: ${currentRoom}`;
+
+/* ---------- Helper Functions ---------- */
+function dmRoomName(user1, user2) {
+  return [user1, user2].sort().join("_");
+}
+
+function hideAllPanels() {
+  chatContainer.style.display = "none";
+  friendlistContainer.style.display = "none";
+  chatroomsContainer.style.display = "none";
+  notepadContainer.style.display = "none";
+  profileContainer.style.display = "none";
+  settingsContainer.style.display = "none";
+}
+
+function showProfile() {
+  hideAllPanels();
+  profileContainer.style.display = "block";
+}
+
+function showSettings() {
+  hideAllPanels();
+  settingsContainer.style.display = "block";
+}
+
+/* ---------- Chatrooms ---------- */
+async function loadChatrooms() {
+  try {
+    const res = await fetch("/chatrooms");
+    if (!res.ok) return;
+    const rooms = await res.json();
+    const roomList = document.getElementById("roomList");
+    roomList.innerHTML = "";
+    rooms.forEach(room => {
+      const li = document.createElement("li");
+      li.textContent = room;
+      li.style.cursor = "pointer";
+      li.style.background = room === currentRoom ? "#d7e8ff" : "#f1f7fd";
+      li.addEventListener("click", () => {
+        joinRoom(room);
+        Array.from(roomList.children).forEach(r => r.style.background = "#f1f7fd");
+        li.style.background = "#d7e8ff";
+      });
+      roomList.appendChild(li);
+    });
+  } catch (err) {
+    console.error("loadChatrooms:", err);
+  }
+}
+
+/* ---------- Join Room ---------- */
+function joinRoom(roomName, isDirect = false, otherUser = "") {
+  if (currentRoom) socket.emit("leaveRoom", { room: currentRoom, user });
+
+  currentRoom = roomName;
+  localStorage.setItem("currentRoom", roomName);
+
+  hideAllPanels();
+  chatContainer.style.display = "block";
+  chatroomsContainer.style.display = "block";
+  notepadContainer.style.display = "block";
+
+  if (isDirect && otherUser) {
+    chatBox.innerHTML = `<p class="system-message">Joined chat with ${otherUser}</p>`;
+    document.getElementById("currentRoomTitle").textContent = `Chat with ${otherUser}`;
+  } else {
+    chatBox.innerHTML = `<p class="system-message">Joined ${roomName}</p>`;
+    document.getElementById("currentRoomTitle").textContent = `Chatroom: ${roomName}`;
+  }
+
+  socket.emit("joinRoom", { room: roomName, user });
+  loadMessages();
+}
+
+/* ---------- Messages ---------- */
+async function loadMessages() {
+  try {
+    const res = await fetch(`/messages/${currentRoom}`);
+    if (!res.ok) {
+      chatBox.innerHTML = `<p class="system-message">No messages or failed to load.</p>`;
+      return;
+    }
+    const messages = await res.json();
+    chatBox.innerHTML = messages
+      .map(m => `<div class="message"><strong>${m.user}:</strong> ${m.message || m.text}</div>`)
+      .join("");
+    chatBox.scrollTop = chatBox.scrollHeight;
+  } catch (err) {
+    console.error("Error loading messages:", err);
+  }
+}
+
+function sendMessage() {
+  const message = input.value.trim();
+  if (!message || !currentRoom) return;
+  const profile = JSON.parse(localStorage.getItem("profile_" + user)) || {};
+  const displayName = profile.anonymous ? "Anonymous" : user;
+  socket.emit("chatMessage", { room: currentRoom, user: displayName, message });
+  input.value = "";
+}
+
+sendBtn.addEventListener("click", sendMessage);
+input.addEventListener("keypress", e => { if (e.key === "Enter") sendMessage(); });
+
+socket.on("chatMessage", data => {
+  const msg = document.createElement("div");
+  msg.classList.add("message");
+  msg.innerHTML = `<strong>${data.user}:</strong> ${data.message}`;
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
+});
+
+socket.on("systemMessage", msg => {
+  const sys = document.createElement("div");
+  sys.classList.add("system-message");
+  sys.textContent = msg;
+  chatBox.appendChild(sys);
+  chatBox.scrollTop = chatBox.scrollHeight;
+});
+
+socket.on("chatroomsUpdated", loadChatrooms);
+socket.on("userJoined", ({ user: joinedUser }) => {
+  const sys = document.createElement("div");
+  sys.classList.add("system-message");
+  sys.textContent = `${joinedUser} joined`;
+  chatBox.appendChild(sys);
+  chatBox.scrollTop = chatBox.scrollHeight;
+});
+socket.on("userLeft", ({ user: leftUser }) => {
+  const sys = document.createElement("div");
+  sys.classList.add("system-message");
+  sys.textContent = `${leftUser} disconnected`;
+  chatBox.appendChild(sys);
+  chatBox.scrollTop = chatBox.scrollHeight;
+});
+
+/* ---------- Create Chatroom ---------- */
+document.getElementById("createRoomBtn").addEventListener("click", async () => {
+  const name = document.getElementById("newRoomInput").value.trim();
+  if (!name) return;
+  try {
+    const res = await fetch("/chatroom", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    });
+    if (res.ok) {
+      document.getElementById("newRoomInput").value = "";
+      loadChatrooms();
+    } else {
+      alert("Room already exists or invalid name");
+    }
+  } catch (err) {
+    console.error("createRoom error:", err);
+  }
+});
+
+/* ---------- Friendlist ---------- */
+function getFriends() { return JSON.parse(localStorage.getItem("friends_" + user)) || []; }
+function saveFriends(friends) { localStorage.setItem("friends_" + user, JSON.stringify(friends)); }
+
+let onlineUsers = [];
+socket.on("updateOnlineUsers", list => { onlineUsers = list; loadFriends(); });
+
+function loadFriends() {
+  const friendsList = document.getElementById("friendsList");
+  const friends = getFriends();
+  friendsList.innerHTML = "";
+
+  friends.forEach((friend, index) => {
+    const info = onlineUsers.find(u => u.user === friend);
+    const isOnline = !!info;
+    const friendRoom = info?.room || "—";
+
+    const li = document.createElement("li");
+    li.style.display = "flex";
+    li.style.justifyContent = "space-between";
+    li.style.alignItems = "center";
+    li.style.padding = "0.5rem";
+    li.style.background = isOnline ? "#e8fce8" : "#f1f7fd";
+    li.style.marginBottom = "0.3rem";
+    li.style.borderRadius = "8px";
+
+    li.innerHTML = `
+      <div>
+        <span class="friend-name" style="cursor:pointer;font-weight:600;">${friend}</span>
+        <small style="margin-left:6px;color:#555;">(${isOnline ? "Online" : "Offline"})</small>
+      </div>
+      <div>
+        <small style="color:#2c6ed5;">${isOnline ? `Room: ${friendRoom}` : ""}</small>
+        <button style="background:red;color:white;border:none;padding:0.2rem 0.5rem;border-radius:6px;cursor:pointer;margin-left:8px;">Delete</button>
+      </div>
+    `;
+
+    li.querySelector("button").addEventListener("click", () => {
+      friends.splice(index, 1);
+      saveFriends(friends);
+      loadFriends();
+    });
+
+    li.querySelector(".friend-name").addEventListener("click", () => {
+      const dmRoom = dmRoomName(user, friend);
+      joinRoom(dmRoom, true, friend);
+    });
+
+    friendsList.appendChild(li);
+  });
+}
+
+document.getElementById("addFriendBtn").addEventListener("click", async () => {
+  const inputEl = document.getElementById("newFriendInput");
+  const newFriend = inputEl.value.trim();
+  if (!newFriend) return alert("Enter a friend name!");
+  if (newFriend === user) return alert("You cannot add yourself!");
+
+  try {
+    const res = await fetch("/users");
+    const allUsers = await res.json();
+    if (!allUsers.includes(newFriend)) return alert("That user does not exist!");
+
+    const friends = getFriends();
+    if (friends.includes(newFriend)) return alert("Friend already added!");
+
+    friends.push(newFriend);
+    saveFriends(friends);
+    inputEl.value = "";
+    loadFriends();
+    alert(`${newFriend} added to your friendlist!`);
+  } catch (err) {
+    console.error("Error checking users:", err);
+  }
+});
+
+/* ---------- Logout ---------- */
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  localStorage.removeItem("user");
+  window.location.href = "index.html";
+});
+
+/* ---------- Navbar Handlers ---------- */
+document.getElementById("chatroomsLink").addEventListener("click", (e) => {
+  e.preventDefault();
+  hideAllPanels();
+  chatroomsContainer.style.display = "block";
+  notepadContainer.style.display = "none";
+  chatContainer.style.display = "none";
+  loadChatrooms();
+});
+
+document.getElementById("messagesLink").addEventListener("click", (e) => {
+  e.preventDefault();
+  hideAllPanels();
+  chatContainer.style.display = "block";
+  joinRoom(currentRoom);
+});
+
+document.getElementById("friendlistLink").addEventListener("click", (e) => {
+  e.preventDefault();
+  hideAllPanels();
+  friendlistContainer.style.display = "block";
+  loadFriends();
+});
+
+document.getElementById("usernameDisplay").addEventListener("click", showProfile);
+document.getElementById("settingsLink").addEventListener("click", showSettings);
+
+/* ---------- Socket Reconnect ---------- */
+socket.on("connect", () => {
+  if (currentRoom) socket.emit("joinRoom", { room: currentRoom, user });
+});
+
+/* ---------- Notepad ---------- */
+const notepad = document.getElementById("notepad");
+const saveNoteBtn = document.getElementById("saveNoteBtn");
+const autosaveStatus = document.getElementById("autosaveStatus");
+
+function loadNote() {
+  const noteKey = "notepad_" + user;
+  notepad.value = localStorage.getItem(noteKey) || "";
+}
+loadNote();
+
+saveNoteBtn.addEventListener("click", () => {
+  const noteKey = "notepad_" + user;
+  localStorage.setItem(noteKey, notepad.value);
+  alert("Notes saved!");
+});
+
+// Optional autosave
+notepad.addEventListener("input", () => {
+  const noteKey = "notepad_" + user;
+  localStorage.setItem(noteKey, notepad.value);
+  autosaveStatus.textContent = "Autosaved";
+  setTimeout(() => autosaveStatus.textContent = "", 1000);
+});
+
+/* ---------- Profile ---------- */
+function loadProfile() {
+  const profile = JSON.parse(localStorage.getItem("profile_" + user)) || {};
+  profileName.textContent = profile.name || user;
+  profileAge.textContent = profile.age || "";
+  profileGender.textContent = profile.gender || "";
+  profileUniversity.textContent = profile.university || "";
+  profileAnonymous.textContent = profile.anonymous ? "Yes" : "No";
+}
+loadProfile();
+
+editBtn.addEventListener("click", () => {
+  editName.value = profileName.textContent;
+  editAge.value = profileAge.textContent;
+  editGender.value = profileGender.textContent;
+  editUniversity.value = profileUniversity.textContent;
+  profileName.style.display = "none";
+  profileAge.style.display = "none";
+  profileGender.style.display = "none";
+  profileUniversity.style.display = "none";
+  editBtn.style.display = "none";
+  saveBtn.style.display = "inline-block";
+  cancelBtn.style.display = "inline-block";
+});
+
+saveBtn.addEventListener("click", () => {
+  const profile = {
+    name: editName.value,
+    age: editAge.value,
+    gender: editGender.value,
+    university: editUniversity.value,
+    anonymous: profileAnonymous.textContent === "Yes"
+  };
+  localStorage.setItem("profile_" + user, JSON.stringify(profile));
+  loadProfile();
+  saveBtn.style.display = "none";
+  cancelBtn.style.display = "none";
+  editBtn.style.display = "inline-block";
+  profileName.style.display = "block";
+  profileAge.style.display = "block";
+  profileGender.style.display = "block";
+  profileUniversity.style.display = "block";
+});
+
+cancelBtn.addEventListener("click", () => {
+  saveBtn.style.display = "none";
+  cancelBtn.style.display = "none";
+  editBtn.style.display = "inline-block";
+  profileName.style.display = "block";
+  profileAge.style.display = "block";
+  profileGender.style.display = "block";
+  profileUniversity.style.display = "block";
+});
+
+/* ---------- DOMContentLoaded Enhancements ---------- */
+document.addEventListener("DOMContentLoaded", () => {
+
+  // Theme toggle
+  const themeToggle = document.getElementById("theme-toggle");
+  if (themeToggle) {
+    themeToggle.addEventListener("click", () => {
+      const current = document.body.getAttribute("data-theme") || "light";
+      document.body.setAttribute("data-theme", current === "light" ? "dark" : "light");
+    });
+  }
+
+  // Language toggle
+  const langToggle = document.getElementById("lang-toggle");
+  let currentLang = "EN";
+  if (langToggle) {
+    langToggle.addEventListener("click", () => {
+      currentLang = currentLang === "EN" ? "SV" : "EN";
+      // simple alert demo, can implement full translations later
+      alert(`Language switched to ${currentLang}`);
+    });
+  }
+
+  // Navigation active state
+  const navLinks = document.querySelectorAll(".nav-links a");
+  navLinks.forEach(link => {
+    link.addEventListener("click", () => {
+      navLinks.forEach(l => l.classList.remove("active"));
+      link.classList.add("active");
+    });
+  });
+
+});

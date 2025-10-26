@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pluggstugan Chat</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo">Pluggstugan</div>
+    <ul class="nav-links">
+      <li><a href="#" id="chatroomsLink"  data-en="Study Rooms" data-sv="Stugor">Study Rooms</a></li>
+      <li><a href="#" id="messagesLink" data-en="Messages" data-sv="Meddelande">Messages</a></li>
+      <li><a href="#" id="friendlistLink" data-en="Friends" data-sv="Vänner">Friends</a></li>
+      <li><a href="#" id="settingsLink" data-en="Settings" data-sv="Inställningar">Settings</a></li>
+    </ul>
+     <div class="user-info">
+        <div class="user-avatar" id="userAvatar"></div>
+        <span id="usernameDisplay" style="cursor:pointer;">User</span>
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </nav>
+
+  <!-- Main Layout -->
+    <main class="main-layout" id="chatroomsLayout">
+    
+    <!-- Sidebar / Chatrooms -->
+        <section class="sidebar" id="chatroomsContainer">
+      <h2>Study rooms</h2>
+      <button id="lang-toggle">🇬🇧 / 🇸🇪</button>
+      <ul id="roomList">
+        <li data-room="Matematik">Matematik</li>
+        <li data-room="Svenska">Svenska</li>
+        <li data-room="Engelska">Engelska</li>
+      </ul>
+      <input type="text" id="newRoomInput" placeholder="New room">
+      <button id="createRoomBtn">Create Room</button>
+     </section>
+
+    <!-- Chat Column -->
+    <section class="chat-column" id="chatContainer">
+      <h2 id="currentRoomTitle">Select a Room</h2>
+      <div id="chatBox" id="chatBox"></div>
+            <div id="chatInputArea" class="input-row">
+        <input type="text" id="messageInput" placeholder="Type a message...">
+        <button id="sendBtn">Send</button>
+      </div>
+    </section>
+
+    <!-- Notepad -->
+     <section class="notepad" id="notepadContainer">
+      <h2>Study Notes</h2>
+      <textarea id="notepad" placeholder="Write your notes here..."></textarea>
+      <button id="saveNoteBtn">Save Note</button>
+      <p class="autosave-status" id="autosaveStatus">Saved ✓</p>
+    </section>
+      </main>
+<!-- Friendlist -->
+<section id="friendlistContainer" style="display:none;">
+  <div class="friends-layout">
+    <div class="friends-inner">
+      <div class="friends-left">
+        <h1>Friends</h1>
+
+        <div class="add-friend">
+          <input type="text" id="newFriendInput" placeholder="Add a friend...">
+          <button id="addFriendBtn">Add</button>
+        </div>
+
+        <div class="friends-section">
+          <h2>🟢 Online</h2>
+          <ul id="friendsOnlineList" class="friends-list"></ul>
+        </div>
+
+        <div class="friends-section">
+          <h2>⚪ Offline</h2>
+          <ul id="friendsOfflineList" class="friends-list"></ul>
+        </div>
+      </div>
+
+      <aside class="friends-right">
+        <h2>📚 Study Rooms</h2>
+        <div id="friendsStudyRooms" class="study-rooms-panel">
+          <p>No online friends in study rooms yet.</p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+
+
+  <!-- Messages -->
+  <section class="centered-container" id="messagesContainer" style="display:none;">
+    <h1>Messages</h1>
+    <p>Direct messages will appear here.</p>
+  </section>
+  
+<!-- Profile Section -->
+<section id="profileContainer" style="display:none;">
+  <h2>Your Profile</h2>
+  <div>
+    <label>Name: </label>
+    <span id="profileName"></span>
+    <input type="text" id="editName" style="display:none;">
+  </div>
+  <div>
+    <label>Age: </label>
+    <span id="profileAge"></span>
+    <input type="number" id="editAge" style="display:none;">
+  </div>
+  <div>
+    <label>Gender: </label>
+    <span id="profileGender"></span>
+    <select id="editGender" style="display:none;">
+      <option value="">Select</option>
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+      <option value="Other">Other</option>
+    </select>
+  </div>
+  <div>
+    <label>University: </label>
+    <span id="profileUniversity"></span>
+    <input type="text" id="editUniversity" style="display:none;">
+  </div>
+  <div>
+    <label>Anonymous Mode: </label>
+    <input type="checkbox" id="profileAnonymous">
+  </div>
+  <button id="editProfileBtn">Edit Profile</button>
+  <button id="saveProfileBtn" style="display:none;">Save</button>
+  <button id="cancelProfileBtn" style="display:none;">Cancel</button>
+</section>
+
+<!-- SETTINGS PAGE -->
+<section id="settingsContainer" style="display:none;">
+  <div class="settings-layout">
+    <!-- Sidebar -->
+    <aside class="settings-sidebar">
+      <h2>Settings</h2>
+      <ul>
+        <li class="active" data-section="profile">👤 My Profile</li>
+        <li data-section="language">🌐 Language</li>
+        <li data-section="theme">🎨 Theme</li>
+      </ul>
+    </aside>
+
+    <!-- Main content -->
+    <div class="settings-content">
+      <!-- Profile Section -->
+      <div class="settings-section" id="settings-profile">
+        <div class="profile-picture">
+          <img src="default-avatar.png" alt="Profile Image" id="profileImage">
+          <input type="file" id="uploadProfileImage" accept="image/*" hidden>
+          <button id="changeImageBtn">Change Photo</button>
+        </div>
+
+        <div class="profile-info">
+          <input type="text" placeholder="Name">
+          <input type="number" placeholder="Age">
+          <select>
+            <option value="">Gender</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+          </select>
+          <input type="text" placeholder="University">
+            <div>
+    <label>Anonymous Mode: </label>
+    <input type="checkbox" id="profileAnonymous">
+      </div>
+          <button class="save-profile-btn">Save</button>
+        </div>
+      </div>
+
+      <!-- Language Section -->
+      <div class="settings-section" id="settings-language" style="display:none;">
+        <h3>Language</h3>
+        <select id="langSelect">
+          <option value="en">English</option>
+          <option value="sv">Svenska</option>
+        </select>
+      </div>
+
+      <!-- Theme Section -->
+      <div class="settings-section" id="settings-theme" style="display:none;">
+        <h3>Theme</h3>
+        <select id="themeSelect">
+          <option value="light">Light</option>
+          <option value="dark" selected>Dark</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+  <script src="chat.js"></script>
+</body>
+</html>

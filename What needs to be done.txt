@@ -1,0 +1,8 @@
+The responsiveness needs to be improved. 
+Right now, the text area is too small; 
+it should be a normal size like when the user logs in. 
+Also, when another user creates a room, it should appear 
+immediately in the left chatrooms window without requiring a refresh. 
+Users should be able to join directly, 
+and the joined users’ names should appear as 'joined' 
+when they enter a chatroom and show as 'disconnected' when they leave.

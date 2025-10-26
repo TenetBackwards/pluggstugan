@@ -1,0 +1,1122 @@
+/* --- Global --- */
+body {
+  font-family: "Segoe UI", Tahoma, sans-serif;
+   background: radial-gradient(circle at top left, #00172b, #01344f, #045a70);
+  background-attachment: fixed;
+  color: #fff;
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+/* Frosted-glass helper */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* --- Navbar --- */
+.navbar {
+   width: 95%;
+  max-width: 1200px;
+    background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(25px);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  margin: 1rem auto;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.logo {
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+  opacity: 0.7;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  border-radius: 5%;
+  gap: 0.6rem;
+}
+
+.user-info img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.user-info button {
+  background: #ff4b4b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+#usernameDisplay {
+  display: none !important;
+}
+
+.user-info button:hover {
+  background: #e23e3e;
+  transform: scale(1.05);
+}
+
+/* --- Unified column alignment fix --- */
+.main-layout {
+  display: flex;
+  align-items: stretch; /* makes all columns same height */
+  gap: 1rem;
+  width: 95%;
+  max-width: 1400px;
+  margin: 1rem auto;
+  flex: 1;
+}
+
+/* --- Sidebar / Chatrooms --- */
+.sidebar {
+  flex: 0 0 240px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(25px);
+  border-radius: 24px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  color: #5a5d61;
+
+  /* 👇 Add these lines */
+  height: 85vh;
+  box-sizing: border-box;
+  overflow-y: auto; /* ensures scrolling if content overflows */
+}
+
+
+/* make titles align nicely */
+.sidebar h2,
+.chat-column h2,
+.notepad h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+  font-size: 1.1rem;
+  padding-left: 0.2rem;
+  color: #82d4ff;
+}
+
+#lang-toggle {
+  margin-bottom: 1rem;
+  background: #2c6ed5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+}
+
+#roomList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+}
+
+#roomList li {
+  display: flex;
+  align-items: center;
+  background: transparent; /* transparent to show gradient */
+  gap: 0.6rem;
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  position: relative;
+}
+
+#roomList li:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateX(3px);
+}
+
+/* Dot on the left */
+
+
+/* New room input & button */
+#newRoomInput {
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-bottom: 0.5rem;
+}
+
+#sendBtn {
+  background: linear-gradient(135deg, #00bfff, #4facfe);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s,all 0.25s ease;
+}
+
+
+#createRoomBtn {
+   background: linear-gradient(135deg, #4facfe, #00f2fe);
+  border: none;
+  border-radius: 10px;
+  padding: 0.8rem 1.4rem;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  margin-top: 1rem;
+  align-self: flex-end; /* optional: moves button to bottom-right */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+}
+
+
+#createRoomBtn:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+/* --- Chat Column --- */
+.chat-column {
+  flex: 1;
+  background: rgba(5, 25, 50, 0.6); /* darker blue glass */
+  backdrop-filter: blur(25px);
+  border-radius: 24px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+  max-height: 80vh;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f5faff; /* brighter white-blue text */
+}
+
+.chat-column h2 {
+  color: #82d4ff;
+  margin-top: 0;
+}
+
+
+/* --- Chat Box --- */
+#chatBox {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 1rem;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+}
+
+/* --- Messages --- */
+.message {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 0.5rem;
+  max-width: 90%;
+  word-wrap: break-word;
+  color: #f1f8ff; /* light readable text */
+}
+
+.message strong {
+  color: #58b6ff; /* bright cyan-blue username */
+}
+
+
+/* --- Chat input row --- */
+.input-row {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.input-row input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.12);
+  padding: 0.6rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.input-row button {
+  background: linear-gradient(135deg, #00bfff, #4facfe);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s,all 0.25s ease;
+}
+
+.input-row button:hover {
+  background: #1e5cc5;
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+/* --- Notepad --- */
+.notepad {
+  flex: 0 0 260px;
+  background: rgba(5, 25, 50, 0.6); /* same as chat column */
+  backdrop-filter: blur(25px);
+  border-radius: 24px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+  max-height: 83vh;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f5faff;
+}
+
+.notepad h2 {
+  color: #82d4ff;
+}
+
+.notepad textarea {
+  flex: 1;
+  resize: none;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 0.8rem;
+  font-size: 1rem;
+  color: #f8fbff;
+}
+
+.notepad textarea::placeholder {
+  color: rgba(240, 240, 240, 0.7);
+}
+.autosave-status {
+  font-size: 0.85rem;
+  color: #4caf50;
+  text-align: right;
+}
+
+/* --- Notepad Save Button --- */
+#saveNoteBtn {
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  border: none;
+  border-radius: 10px;
+  padding: 0.8rem 1.4rem;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  margin-top: 1rem;
+  align-self: flex-end; /* optional: moves button to bottom-right */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+}
+
+#saveNoteBtn:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+
+/* --- Inputs & Buttons --- */
+.input-row button {
+  background: #3a7bd5;
+}
+
+.input-row button:hover {
+  background: #2d5fa3;
+}
+
+/* --- CREATE FORMS (stuga/tråd) --- */
+.create-box {
+  text-align: center;
+  color: white;
+  font-size: 1.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(30px);
+  padding: 2rem;
+  border-radius: 20px;
+}
+
+.create-box input,
+.create-box textarea {
+  width: 80%;
+  background: rgba(255, 255, 255, 0.12);
+  border: none;
+  border-radius: 12px;
+  padding: 0.8rem;
+  margin: 0.5rem 0;
+  color: white;
+  font-size: 1rem;
+}
+
+.create-box button {
+  margin-top: 1rem;
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  border: none;
+  border-radius: 12px;
+  padding: 0.8rem 2rem;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.25s;
+}
+
+.create-box button:hover {
+  transform: scale(1.05);
+}
+
+/* === STUDY ROOM SELECTION MODE (centered layout) === */
+body.study-select {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  overflow: hidden;
+}
+/* --- Center the "New Room" input and button in Study Room selection mode --- */
+body.study-select #newRoomInput,
+body.study-select #createRoomBtn {
+  display: block;
+  margin: 0.5rem auto; /* centers horizontally */
+  text-align: center;
+}
+
+body.study-select #newRoomInput {
+  width: 70%;
+  background: rgba(255, 255, 255, 0.12);
+  border: none;
+  border-radius: 12px;
+  padding: 0.8rem;
+  color: white;
+  font-size: 1rem;
+}
+
+body.study-select #createRoomBtn {
+  margin-top: 1rem;
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  border: none;
+  border-radius: 12px;
+  padding: 0.8rem 2rem;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.25s;
+}
+
+body.study-select #createRoomBtn:hover {
+  transform: scale(1.05);
+}
+
+
+body.study-select .notepad {
+  display: none !important;
+}
+
+/* Make sidebar the centered box instead of chat-column */
+body.study-select .sidebar {
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 90%;
+  max-width: 700px;
+  min-height: 60vh;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(30px);
+  border-radius: 24px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+  padding: 2.5rem;
+  color: #82d4ff;;
+  text-align: center;
+  animation: fadeInRoom 0.4s ease;
+}
+
+
+/* Center layout */
+body.study-select .main-layout {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100%;
+  height: 100%;
+  margin-top: 4rem;
+  gap: 2rem;
+}
+
+
+/* Title */
+body.study-select .chat-column h2 {
+  font-size: 2.2rem;
+  margin-bottom: 2rem;
+  color: white;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.25);
+}
+
+/* Study room list */
+body.study-select #roomList {
+  width: 100%;
+  max-width: 500px;
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+}
+
+body.study-select #roomList li {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  color: #82d4ff;;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+body.study-select #roomList li:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+/* Hide chat elements */
+body.study-select #chatInputArea,
+body.study-select #chatBox {
+  display: none !important;
+}
+
+/* Fade-in animation */
+@keyframes fadeInRoom {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+body.study-select .chat-column {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  padding: 2.5rem 3rem;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  backdrop-filter: blur(30px);
+  background-image: linear-gradient(135deg, rgba(79,172,254,0.2), rgba(0,242,254,0.1));
+}
+
+
+
+/* ===== FRIENDS PAGE — corrected, aligned two-column centered layout ===== */
+.friends-layout {
+  display: flex;
+  justify-content: center;    /* center the whole friends area horizontally */
+  padding: 2rem;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: calc(100vh - 120px);
+}
+
+/* container that holds both columns and sets max width */
+.friends-inner {
+  display: flex;
+  gap: 2rem;
+  width: 95%;
+  max-width: 1200px;
+  align-items: flex-start;   /* align top edges */
+}
+
+/* Left main card (friend list) */
+.friends-left {
+  flex: 1 1 700px;            /* grows, basis ~700px */
+  max-width: 720px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(25px);
+  border-radius: 24px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.32);
+  padding: 2rem;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Right column: Study Rooms panel (not absolute) */
+.friends-right {
+  flex: 0 0 300px;           /* fixed width column like notepad */
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(25px);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.32);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-self: flex-start;    /* ensure top alignment with left card */
+}
+
+/* Titles */
+.friends-left h1 {
+  margin: 0;
+  font-size: 1.9rem;
+  color: #aee8ff;
+  text-align: center;
+}
+
+.friends-right h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #aee8ff;
+}
+
+/* Add friend input row (left card) */
+.add-friend {
+  display: flex;
+  gap: 0.6rem;
+}
+.add-friend input {
+  flex: 1;
+  background: rgba(255,255,255,0.12);
+  border: none;
+  border-radius: 10px;
+  padding: 0.8rem;
+  color: #fff;
+}
+.add-friend button {
+  background: linear-gradient(135deg,#4facfe,#00f2fe);
+  border: none;
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* friend lists */
+.friends-section { margin-top: 0.5rem; }
+.friends-section h2 { color: #aee8ff; font-size: 1.1rem; margin-bottom: 0.6rem; }
+.friends-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.6rem; }
+.friends-list li {
+  background: rgba(255,255,255,0.12);
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  color: black;
+}
+
+/* study rooms panel content */
+.study-rooms-panel { display: flex; flex-direction: column; gap: 0.6rem; }
+.study-rooms-panel .room-row {
+  background: rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  color: #d7eaff;
+}
+
+/* ===== SETTINGS PAGE ===== */
+.settings-layout {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 2rem;
+  width: 95%;
+  max-width: 1200px;
+  margin: 2rem auto;
+  min-height: calc(100vh - 160px);
+}
+
+/* Sidebar */
+.settings-sidebar {
+  flex: 0 0 220px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(25px);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  color: #fff;
+}
+
+.settings-sidebar h2 {
+  font-size: 1.3rem;
+  margin-bottom: 1.2rem;
+  color: #aee8ff;
+}
+
+.settings-sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.settings-sidebar li {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  margin-bottom: 0.6rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.settings-sidebar li:hover,
+.settings-sidebar li.active {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateX(3px);
+}
+
+/* Main content */
+.settings-content {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(25px);
+  border-radius: 24px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.32);
+  padding: 2.5rem;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Profile image area */
+.profile-picture {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.profile-picture img {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(255,255,255,0.4);
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+
+#changeImageBtn {
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  border: none;
+  border-radius: 10px;
+  padding: 0.6rem 1rem;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.25s;
+}
+#changeImageBtn:hover {
+  transform: scale(1.05);
+}
+
+/* Profile info inputs */
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.profile-info input,
+.profile-info select {
+  background: rgba(255,255,255,0.12);
+  border: none;
+  border-radius: 10px;
+  padding: 0.8rem;
+  color: #fff;
+  width: 100%;
+  font-size: 1rem;
+}
+
+.profile-info input::placeholder {
+  color: rgba(255,255,255,0.7);
+}
+
+.anon-mode {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  font-size: 0.95rem;
+  margin-top: 1rem;
+}
+
+.save-profile-btn {
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  border: none;
+  border-radius: 10px;
+  padding: 0.8rem 1.4rem;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.25s, opacity 0.25s;
+  margin-top: 1rem;
+}
+.save-profile-btn:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+/* Responsive layout */
+@media (max-width: 900px) {
+  .settings-layout {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .settings-sidebar {
+    flex: none;
+    width: 100%;
+  }
+}
+
+/* ===== PROFILE PAGE (Settings-style layout) ===== */
+.profile-layout {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 2rem;
+  width: 95%;
+  max-width: 1200px;
+  margin: 2rem auto;
+  min-height: calc(100vh - 160px);
+  color: #fff;
+}
+
+/* Sidebar */
+.profile-sidebar {
+  flex: 0 0 220px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(25px);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.profile-sidebar h2 {
+  font-size: 1.3rem;
+  margin-bottom: 1.2rem;
+  color: #aee8ff;
+}
+
+.profile-sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.profile-sidebar li {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  margin-bottom: 0.6rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.profile-sidebar li:hover,
+.profile-sidebar li.active {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateX(3px);
+}
+
+/* Content */
+.profile-content {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(25px);
+  border-radius: 24px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.32);
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Profile picture */
+.profile-picture {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.profile-picture img {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(255,255,255,0.4);
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+
+#changeImageBtn {
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  border: none;
+  border-radius: 10px;
+  padding: 0.6rem 1rem;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.25s;
+}
+
+#changeImageBtn:hover {
+  transform: scale(1.05);
+}
+
+/* Inputs */
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.profile-info input,
+.profile-info select {
+  background: rgba(255,255,255,0.12);
+  border: none;
+  border-radius: 10px;
+  padding: 0.8rem;
+  color: #fff;
+  width: 100%;
+  font-size: 1rem;
+}
+
+.profile-info input::placeholder {
+  color: rgba(255,255,255,0.7);
+}
+
+.anon-mode {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  font-size: 0.95rem;
+  margin-top: 1rem;
+}
+
+.save-profile-btn {
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  border: none;
+  border-radius: 10px;
+  padding: 0.8rem 1.4rem;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.25s, opacity 0.25s;
+  margin-top: 1rem;
+}
+
+.save-profile-btn:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #2c6ed5;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  margin-right: 8px;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+}
+
+/* === LOGIN PAGE STYLE === */
+body.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: radial-gradient(circle at top left, #00172b, #01344f, #045a70);
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  margin: 0;
+  color: #fff;
+  overflow: hidden;
+}
+
+/* Main container (glass panel) */
+.login-container {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(30px);
+  border-radius: 24px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
+  padding: 3rem 3.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 90%;
+  max-width: 420px;
+  text-align: center;
+  animation: fadeInLogin 0.5s ease;
+}
+
+/* Title */
+.login-container h1 {
+  font-size: 2.2rem;
+  color: #82d4ff;
+  margin-bottom: 2rem;
+  letter-spacing: 1px;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
+}
+
+/* Inputs */
+.login-container input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.12);
+  border: none;
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  margin-bottom: 1rem;
+  color: #fff;
+  font-size: 1rem;
+  transition: all 0.25s ease;
+}
+
+.login-container input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.login-container input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.18);
+  transform: scale(1.02);
+}
+
+/* Buttons */
+.login-buttons {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.login-buttons button {
+  flex: 1;
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  border: none;
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+}
+
+.login-buttons button:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+/* Fade-in animation */
+@keyframes fadeInLogin {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Small text for errors or messages (optional) */
+.login-message {
+  color: #aee8ff;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+
+
+/* Responsive */
+@media (max-width: 900px) {
+  .profile-layout {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .profile-sidebar {
+    width: 100%;
+  }
+}
+
+
+/* responsive - stack on small screens */
+@media (max-width: 900px) {
+  .friends-inner { flex-direction: column; align-items: stretch; }
+  .friends-right { flex: none; width: 100%; }
+  .friends-left { max-width: 100%; }
+}
+
+/* --- Responsive --- */
+@media (max-width: 900px) {
+  .main-layout {
+    flex-direction: column;
+  }
+
+  .sidebar,
+  .notepad,
+  .chat-column {
+    width: 100%;
+    max-height: none;
+  }
+
+  #chatBox {
+    min-height: 300px;
+  }
+}
