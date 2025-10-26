@@ -1,21 +1,24 @@
-const fs = require("fs");
+// --- Core imports ---
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
+const cors = require("cors");
+
+// --- App setup ---
+const app = express();
 const PORT = process.env.PORT || 3000;
 
-
-const cors = require("cors");
+// --- Middleware ---
+app.use(express.json());
 app.use(cors({
-  origin: "https://pluggstugan.netlify.app",
+  origin: "https://pluggstugan.netlify.app", // your Netlify frontend
   methods: ["GET", "POST", "DELETE"],
   credentials: true
 }));
 
-
+// --- Create HTTP + Socket.IO server ---
 const server = http.createServer(app);
-// const io = new Server(server);
 const io = new Server(server, {
   cors: {
     origin: "https://pluggstugan.netlify.app",
@@ -23,7 +26,6 @@ const io = new Server(server, {
     credentials: true
   }
 });
-
 
 
 app.use(express.json());
