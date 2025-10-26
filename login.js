@@ -1,3 +1,6 @@
+// --- Base API URL (your Render backend) ---
+const API_URL = "https://pluggstugan.onrender.com"; // ✅ change if your Render URL differs
+
 // --- Event listeners for login and account creation ---
 document.getElementById("loginBtn").addEventListener("click", login);
 document.getElementById("createBtn").addEventListener("click", createAccount);
@@ -13,7 +16,7 @@ async function login() {
   }
 
   try {
-    const res = await fetch("/login", {
+    const res = await fetch(`${API_URL}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
@@ -47,7 +50,7 @@ async function createAccount() {
   }
 
   try {
-    const res = await fetch("/register", {
+    const res = await fetch(`${API_URL}/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
@@ -69,7 +72,7 @@ async function logout() {
   const username = localStorage.getItem("user");
   if (username) {
     try {
-      await fetch("/logout", {
+      await fetch(`${API_URL}/logout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username }),
@@ -89,11 +92,15 @@ document.getElementById("logoutBtn")?.addEventListener("click", logout);
 window.addEventListener("beforeunload", async () => {
   const username = localStorage.getItem("user");
   if (username) {
-    await fetch("/logout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username }),
-    });
+    try {
+      await fetch(`${API_URL}/logout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username }),
+      });
+    } catch (err) {
+      console.error("Auto-logout error:", err);
+    }
   }
 });
 
