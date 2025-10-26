@@ -3,11 +3,28 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-const app = express();
+
+const cors = require("cors");
+app.use(cors({
+  origin: "https://pluggstugan.netlify.app",
+  methods: ["GET", "POST", "DELETE"],
+  credentials: true
+}));
+
+
 const server = http.createServer(app);
-const io = new Server(server);
+// const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: "https://pluggstugan.netlify.app",
+    methods: ["GET", "POST", "DELETE"],
+    credentials: true
+  }
+});
+
+
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "")));
